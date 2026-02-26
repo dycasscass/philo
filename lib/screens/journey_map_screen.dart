@@ -140,31 +140,36 @@ class JourneyMapScreen extends StatelessWidget {
   }
 
   Widget _buildFourBranchRow(BuildContext context) {
-    const branchIds = [
-      'life_philosophy',
-      'phenomenology',
-      'existentialism',
-      'analytic_philosophy',
-    ];
+    const topIds = ['life_philosophy', 'phenomenology'];
+    const bottomIds = ['existentialism', 'analytic_philosophy'];
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: branchIds.map((id) {
-        final world = findWorld(id);
-        final status = _worldStatus(id);
-        return Flexible(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: _WorldNode(
-              world: world,
-              status: status,
-              isZh: _isZh,
-              compact: true,
-              onTap: status != 'locked' ? () => _onWorldTap(context, id) : null,
+    Widget buildRow(List<String> ids) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: ids.map((id) {
+          final world = findWorld(id);
+          final status = _worldStatus(id);
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: _WorldNode(
+                world: world,
+                status: status,
+                isZh: _isZh,
+                onTap: status != 'locked' ? () => _onWorldTap(context, id) : null,
+              ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      );
+    }
+
+    return Column(
+      children: [
+        buildRow(topIds),
+        const SizedBox(height: 10),
+        buildRow(bottomIds),
+      ],
     );
   }
 }
@@ -175,14 +180,12 @@ class _WorldNode extends StatelessWidget {
   final WorldConfig world;
   final String status;
   final bool isZh;
-  final bool compact;
   final VoidCallback? onTap;
 
   const _WorldNode({
     required this.world,
     required this.status,
     required this.isZh,
-    this.compact = false,
     this.onTap,
   });
 
@@ -195,9 +198,9 @@ class _WorldNode extends StatelessWidget {
     return GestureDetector(
       onTap: _isUnlocked ? onTap : null,
       child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 8 : 16,
-          vertical: compact ? 10 : 14,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
         ),
         decoration: BoxDecoration(
           color: _isUnlocked ? AppColors.surfaceLight : AppColors.surface,
@@ -230,23 +233,22 @@ class _WorldNode extends StatelessWidget {
                   : _isUnlocked
                       ? Icons.lock_open_outlined
                       : Icons.lock_outline,
-              size: compact ? 14 : 18,
+              size: 16,
               color: _isCompleted
                   ? AppColors.success
                   : _isUnlocked
                       ? AppColors.accent
                       : AppColors.textLight,
             ),
-            SizedBox(width: compact ? 4 : 8),
+            const SizedBox(width: 6),
             Flexible(
               child: Text(
                 isZh ? world.nameZh : world.nameEn,
                 style: TextStyle(
-                  fontSize: compact ? 12 : 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: _isUnlocked ? AppColors.textPrimary : AppColors.textLight,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
