@@ -113,29 +113,43 @@ class JourneyMapScreen extends StatelessWidget {
     final empStatus = _worldStatus('empiricism');
     final utilStatus = _worldStatus('utilitarianism');
 
-    // 经验主义在主线居中，功利主义紧贴右侧作为侧枝
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _WorldNode(
-          world: empiricism,
-          status: empStatus,
-          isZh: _isZh,
-          onTap: empStatus != 'locked'
-              ? () => _onWorldTap(context, 'empiricism')
-              : null,
-        ),
-        Container(width: 16, height: 2, color: AppColors.divider),
-        _WorldNode(
-          world: utilitarianism,
-          status: utilStatus,
-          isZh: _isZh,
-          onTap: utilStatus != 'locked'
-              ? () => _onWorldTap(context, 'utilitarianism')
-              : null,
-        ),
-      ],
+    // 经验主义居中在主线上，功利主义作为右侧侧枝
+    // 用 Stack 确保经验主义始终在页面正中心
+    return SizedBox(
+      width: double.infinity,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          // 经验主义：居中（和上下节点对齐）
+          _WorldNode(
+            world: empiricism,
+            status: empStatus,
+            isZh: _isZh,
+            onTap: empStatus != 'locked'
+                ? () => _onWorldTap(context, 'empiricism')
+                : null,
+          ),
+          // 功利主义：定位在经验主义右侧
+          Positioned(
+            right: 8,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 16, height: 2, color: AppColors.divider),
+                _WorldNode(
+                  world: utilitarianism,
+                  status: utilStatus,
+                  isZh: _isZh,
+                  onTap: utilStatus != 'locked'
+                      ? () => _onWorldTap(context, 'utilitarianism')
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
