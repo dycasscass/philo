@@ -30,7 +30,7 @@ class _LessonConfig {
 }
 
 /// 按顺序排列的课程列表，完成第 N 课解锁第 N+1 课
-const _platoLessons = [
+const _lessons = [
   _LessonConfig(
     lessonId: 'plato_cave',
     number: 1,
@@ -46,8 +46,8 @@ const _platoLessons = [
     number: 2,
     titleZh: '理型论',
     titleEn: 'Theory of Forms',
-    subtitleZh: '“真实“存在于何处？',
-    subtitleEn: 'Where does the ‘real’ exist?',
+    subtitleZh: '\u201c真实\u201d存在于何处？',
+    subtitleEn: 'Where does the \u2018real\u2019 exist?',
     philosopherNameZh: '柏拉图',
     philosopherNameEn: 'Plato',
   ),
@@ -60,6 +60,56 @@ const _platoLessons = [
     subtitleEn: 'Who should rule?',
     philosopherNameZh: '柏拉图',
     philosopherNameEn: 'Plato',
+  ),
+  _LessonConfig(
+    lessonId: 'aristotle_form_matter',
+    number: 4,
+    titleZh: '形式与质料',
+    titleEn: 'Form and Matter',
+    subtitleZh: '事物的本质在哪里？',
+    subtitleEn: 'Where is the essence of things?',
+    philosopherNameZh: '亚里士多德',
+    philosopherNameEn: 'Aristotle',
+  ),
+  _LessonConfig(
+    lessonId: 'aristotle_virtue',
+    number: 5,
+    titleZh: '德性伦理',
+    titleEn: 'Virtue Ethics',
+    subtitleZh: '怎样才算活得好？',
+    subtitleEn: 'What does it mean to live well?',
+    philosopherNameZh: '亚里士多德',
+    philosopherNameEn: 'Aristotle',
+  ),
+  _LessonConfig(
+    lessonId: 'stoic_fate_freedom',
+    number: 6,
+    titleZh: '命运与自由',
+    titleEn: 'Fate and Freedom',
+    subtitleZh: '什么是你能控制的？',
+    subtitleEn: 'What is within your control?',
+    philosopherNameZh: '斯多葛',
+    philosopherNameEn: 'Stoics',
+  ),
+  _LessonConfig(
+    lessonId: 'epicurus_death_pleasure',
+    number: 7,
+    titleZh: '死亡与快乐',
+    titleEn: 'Death and Pleasure',
+    subtitleZh: '你在害怕什么？',
+    subtitleEn: 'What are you afraid of?',
+    philosopherNameZh: '伊壁鸠鲁',
+    philosopherNameEn: 'Epicurus',
+  ),
+  _LessonConfig(
+    lessonId: 'diogenes_nature_convention',
+    number: 8,
+    titleZh: '自然与规范',
+    titleEn: 'Nature and Convention',
+    subtitleZh: '哪些规则值得遵守？',
+    subtitleEn: 'Which rules are worth following?',
+    philosopherNameZh: '第欧根尼',
+    philosopherNameEn: 'Diogenes',
   ),
 ];
 
@@ -93,7 +143,7 @@ class _CourseMapScreenState extends State<CourseMapScreen> {
 
   /// 判断课程状态：completed / unlocked / locked
   String _lessonStatus(int index) {
-    final config = _platoLessons[index];
+    final config = _lessons[index];
     if (widget.storage.isLessonCompleted(config.lessonId)) {
       print('[DEBUG] Lesson ${config.lessonId}: completed');
       return 'completed';
@@ -103,7 +153,7 @@ class _CourseMapScreenState extends State<CourseMapScreen> {
       print('[DEBUG] Lesson ${config.lessonId}: unlocked (first)');
       return 'unlocked';
     }
-    final prevId = _platoLessons[index - 1].lessonId;
+    final prevId = _lessons[index - 1].lessonId;
     final prevDone = widget.storage.isLessonCompleted(prevId);
     print('[DEBUG] Lesson ${config.lessonId}: prev=$prevId done=$prevDone');
     if (prevDone) return 'unlocked';
@@ -112,14 +162,14 @@ class _CourseMapScreenState extends State<CourseMapScreen> {
 
   /// 章节测验：所有课程完成后解锁
   String get _quizStatus {
-    final allDone = _platoLessons.every(
+    final allDone = _lessons.every(
       (c) => widget.storage.isLessonCompleted(c.lessonId),
     );
     return allDone ? 'unlocked' : 'locked';
   }
 
   void _openLesson(int index) async {
-    final config = _platoLessons[index];
+    final config = _lessons[index];
     final lessonData = _lessonDataMap[config.lessonId];
     print('[DEBUG] _openLesson: ${config.lessonId}, hasData=${lessonData != null}');
     if (lessonData == null) return; // 课程数据还没添加
@@ -156,22 +206,17 @@ class _CourseMapScreenState extends State<CourseMapScreen> {
               _isZh ? '古希腊哲学' : 'Ancient Greek Philosophy',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
-            const SizedBox(height: 8),
-            Text(
-              _isZh ? '章节一：柏拉图' : 'Chapter 1: Plato',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
             const SizedBox(height: 32),
 
             // 课程节点
-            for (int i = 0; i < _platoLessons.length; i++) ...[
+            for (int i = 0; i < _lessons.length; i++) ...[
               if (i > 0) _PathConnector(status: _lessonStatus(i)),
               _LessonNode(
-                number: _platoLessons[i].number,
-                titleZh: _platoLessons[i].titleZh,
-                titleEn: _platoLessons[i].titleEn,
-                subtitleZh: _platoLessons[i].subtitleZh,
-                subtitleEn: _platoLessons[i].subtitleEn,
+                number: _lessons[i].number,
+                titleZh: _lessons[i].titleZh,
+                titleEn: _lessons[i].titleEn,
+                subtitleZh: _lessons[i].subtitleZh,
+                subtitleEn: _lessons[i].subtitleEn,
                 isZh: _isZh,
                 status: _lessonStatus(i),
                 onTap: () => _openLesson(i),
@@ -184,8 +229,8 @@ class _CourseMapScreenState extends State<CourseMapScreen> {
               number: 0,
               titleZh: '章节测验',
               titleEn: 'Chapter Quiz',
-              subtitleZh: '检验你对柏拉图的理解',
-              subtitleEn: 'Test your understanding of Plato',
+              subtitleZh: '检验你对古希腊哲学的理解',
+              subtitleEn: 'Test your understanding of Ancient Greek Philosophy',
               isZh: _isZh,
               status: _quizStatus,
               isQuiz: true,

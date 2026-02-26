@@ -137,173 +137,276 @@ const platoLesson2Forms = Lesson(
   dialogue: Dialogue(
     startNodeId: 'n1',
     nodes: [
-      // ── 第一轮：桌子问题（3选项） ──
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // 第一轮：桌子问题（3选项）
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       DialogueNode(
         id: 'n1',
         speaker: 'philosopher',
-        textZh: '你见过无数张桌子，没有两张完全相同。但你一眼就能认出它们都是桌子。为什么？',
+        textZh: '你见过无数张桌子——木的、铁的、圆的、方的，没有两张完全相同。但你一眼就能认出它们都是\u201c桌子\u201d。为什么？',
         textEn: 'TODO',
         choices: [
           DialogueChoice(
-            textZh: '因为它们有共同特征',
+            textZh: '因为它们有共同特征——都有平面、都有腿、都能放东西',
             textEn: 'TODO',
             nextNodeId: 'n2a',
           ),
           DialogueChoice(
-            textZh: '因为这是人类的规定',
+            textZh: '因为\u201c桌子\u201d是人类规定的概念',
             textEn: 'TODO',
             nextNodeId: 'n2b',
           ),
           DialogueChoice(
-            textZh: '说不清，但我就是知道',
+            textZh: '因为从小就被教会了什么是桌子',
             textEn: 'TODO',
             nextNodeId: 'n2c',
           ),
         ],
       ),
 
-      // ── 分支 A：共同特征 ──
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // 第二轮：三条分支各自追问
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+      // ── A：共同特征 → 追问石板 ──
       DialogueNode(
         id: 'n2a',
         speaker: 'philosopher',
-        textZh: '这是大多数人的回答。但我想让你试试一个用"共同特征"更难解释的例子。',
-        textEn: 'TODO',
-        nextNodeId: 'n3',
-      ),
-
-      // ── 分支 B：人类的规定 ──
-      DialogueNode(
-        id: 'n2b',
-        speaker: 'philosopher',
-        textZh: '如果只是规定，为什么从没有人把椅子规定成桌子？也许背后有比规定更深的东西。我给你一个更难的例子。',
-        textEn: 'TODO',
-        nextNodeId: 'n3',
-      ),
-
-      // ── 分支 C：说不清 ──
-      DialogueNode(
-        id: 'n2c',
-        speaker: 'philosopher',
-        textZh: '很好，保持这个诚实。说不清本身就值得追问。我给你一个更难的例子。',
-        textEn: 'TODO',
-        nextNodeId: 'n3',
-      ),
-
-      // ── 第二轮汇合：美是什么（2选项） ──
-      DialogueNode(
-        id: 'n3',
-        speaker: 'philosopher',
-        textZh: '一朵花很美，一首音乐也很美，一个数学公式也可以很美。它们完全不同，但你都用"美"来形容。这个"美"到底是什么？',
+        textZh: '好，你说它们有共同特征。但一块石板架在两堆砖上，也有平面，也能放东西。它算桌子吗？你心里一定有一个标准在判断\u201c像桌子但不是桌子\u201d。那个标准从哪来的？',
         textEn: 'TODO',
         choices: [
           DialogueChoice(
-            textZh: '就是一种主观感受，每个人不同',
+            textZh: '从经验里总结出来的——见多了自然就有了这个标准',
+            textEn: 'TODO',
+            nextNodeId: 'n3_induct',
+          ),
+          DialogueChoice(
+            textZh: '这个标准好像在见到桌子之前就有了，经验只是触发了它',
+            textEn: 'TODO',
+            nextNodeId: 'n3_essence',
+          ),
+        ],
+      ),
+
+      // ── B：人类规定 → 追问跨文化 ──
+      DialogueNode(
+        id: 'n2b',
+        speaker: 'philosopher',
+        textZh: '如果只是规定，那为什么全世界不同文化都独立发明了\u201c桌子\u201d这个概念？没有人规定过哈萨克人和玛雅人必须用同一个词来描述同一类东西。为什么他们不约而同地做出了类似的区分？',
+        textEn: 'TODO',
+        choices: [
+          DialogueChoice(
+            textZh: '因为人类有类似的需求，类似的需求自然产生类似的分类',
+            textEn: 'TODO',
+            nextNodeId: 'n3_convention',
+          ),
+          DialogueChoice(
+            textZh: '也许确实有某种超越文化的东西，让所有人做出了相同的判断',
+            textEn: 'TODO',
+            nextNodeId: 'n3_essence',
+          ),
+        ],
+      ),
+
+      // ── C：从小被教会 → 追问第一个人 ──
+      DialogueNode(
+        id: 'n2c',
+        speaker: 'philosopher',
+        textZh: '可是教你的人，又是怎么知道的？追溯到最初，总有一个\u201c第一个人\u201d认出了桌子。那个人没有人教他。他凭什么知道？',
+        textEn: 'TODO',
+        choices: [
+          DialogueChoice(
+            textZh: '他是从具体经验中慢慢摸索出来的，后人只是继承了他的总结',
+            textEn: 'TODO',
+            nextNodeId: 'n3_induct',
+          ),
+          DialogueChoice(
+            textZh: '他可能天生就有这种分辨能力，教育只是唤醒了它',
+            textEn: 'TODO',
+            nextNodeId: 'n3_intuition',
+          ),
+        ],
+      ),
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // 第三轮：四条路径，用"美"深入追问
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+      // ── 归纳路径（来自 A1 / C1） ──
+      DialogueNode(
+        id: 'n3_induct',
+        speaker: 'philosopher',
+        textZh: '你认为概念是从经验中归纳出来的。那我们来试一个更难的：一朵花很美，一首音乐也很美，一个数学证明也可以很美。它们之间没有任何共同的物理特征。你从什么经验里\u201c归纳\u201d出了\u201c美\u201d？',
+        textEn: 'TODO',
+        choices: [
+          DialogueChoice(
+            textZh: '美就是一种主观感受，不需要归纳，每个人感受不同',
+            textEn: 'TODO',
+            nextNodeId: 'n3i_subj',
+          ),
+          DialogueChoice(
+            textZh: '也许\u201c美\u201d真的不是归纳出来的，它的来源可能跟桌子不一样',
+            textEn: 'TODO',
+            nextNodeId: 'n3i_not',
+          ),
+        ],
+      ),
+      DialogueNode(
+        id: 'n3i_subj',
+        speaker: 'philosopher',
+        textZh: '如果美纯粹是主观的、每个人完全不同，为什么几乎所有文明都觉得星空很美？跨越几千年，人类对美的核心感受惊人地相似。纯粹的主观不应该产生这么多共识。也许有一个\u201c美本身\u201d存在，所有人都在不同程度上感受到了它。',
+        textEn: 'TODO',
+        nextNodeId: 'n4',
+      ),
+      DialogueNode(
+        id: 'n3i_not',
+        speaker: 'philosopher',
+        textZh: '你碰到了关键的困难。如果不是归纳，那就意味着你在接触任何美的东西之前，心里已经有了某种关于\u201c美\u201d的认识。这个认识从哪来的？我的回答是：你的灵魂曾经直接见过\u201c美本身\u201d。',
+        textEn: 'TODO',
+        nextNodeId: 'n4',
+      ),
+
+      // ── 本质路径（来自 A2 / B2） ──
+      DialogueNode(
+        id: 'n3_essence',
+        speaker: 'philosopher',
+        textZh: '你感觉到有某种超越具体事物的东西。让我们用\u201c美\u201d来检验。一朵花很美，一段旋律很美，一个数学公式很美——它们完全不同，但你用同一个\u201c美\u201d来描述。这个\u201c美\u201d，是存在于这些事物中，还是存在于它们之外？',
+        textEn: 'TODO',
+        choices: [
+          DialogueChoice(
+            textZh: '存在于事物中——每个美的东西里都有一份\u201c美\u201d的成分',
+            textEn: 'TODO',
+            nextNodeId: 'n3e_in',
+          ),
+          DialogueChoice(
+            textZh: '存在于事物之外——这些东西只是触发了我心中已有的某种感受',
+            textEn: 'TODO',
+            nextNodeId: 'n3e_out',
+          ),
+        ],
+      ),
+      DialogueNode(
+        id: 'n3e_in',
+        speaker: 'philosopher',
+        textZh: '如果美存在于花里，那花凋谢了，那份美也跟着消失了吗？但你还记得它美过，你仍然知道什么是美。\u201c美\u201d并没有跟着花一起死去。它一直在某个地方。',
+        textEn: 'TODO',
+        nextNodeId: 'n4',
+      ),
+      DialogueNode(
+        id: 'n3e_out',
+        speaker: 'philosopher',
+        textZh: '你离真相只有一步了。如果美不在任何具体的花、音乐、公式里，而是在\u201c某个地方\u201d——那个地方就是我所说的理型世界。你心中关于美的感受，是灵魂对\u201c美的理型\u201d的回忆。',
+        textEn: 'TODO',
+        nextNodeId: 'n4',
+      ),
+
+      // ── 约定路径（来自 B1） ──
+      DialogueNode(
+        id: 'n3_convention',
+        speaker: 'philosopher',
+        textZh: '你说是需求驱动了分类。那我给你一个没有实用需求的例子：美。没有人\u201c需要\u201d美来生存，一朵花美不美跟你能不能活下去没有关系。但你就是能感知到美，而且跟地球另一端、另一个时代的人感知到的惊人相似。这种不基于需求的共识，怎么来的？',
+        textEn: 'TODO',
+        choices: [
+          DialogueChoice(
+            textZh: '美可能也有进化上的功能，只是我们还不完全理解',
+            textEn: 'TODO',
+            nextNodeId: 'n3c_evo',
+          ),
+          DialogueChoice(
+            textZh: '美确实不像是需求驱动的，也许有某种更深层的来源',
+            textEn: 'TODO',
+            nextNodeId: 'n3c_deep',
+          ),
+        ],
+      ),
+      DialogueNode(
+        id: 'n3c_evo',
+        speaker: 'philosopher',
+        textZh: '就算审美有进化的成分，你能解释为什么人类觉得数学证明是\u201c美\u201d的吗？一个公式的优雅跟生存完全无关。进化能解释你为什么怕蛇，但很难解释你为什么觉得欧拉公式很美。也许\u201c美\u201d的来源比进化更深。',
+        textEn: 'TODO',
+        nextNodeId: 'n4',
+      ),
+      DialogueNode(
+        id: 'n3c_deep',
+        speaker: 'philosopher',
+        textZh: '你开始看到了。当一个现象无法被需求、文化、进化完全解释时，也许该往内心深处找。你对\u201c美\u201d的认识，也许不是后天获得的，而是你本来就有的。',
+        textEn: 'TODO',
+        nextNodeId: 'n4',
+      ),
+
+      // ── 直觉路径（来自 C2） ──
+      DialogueNode(
+        id: 'n3_intuition',
+        speaker: 'philosopher',
+        textZh: '你说人天生就有分辨的能力。让我们用\u201c美\u201d来检验这个想法。研究发现，刚出生的婴儿会更长时间地注视对称的面孔。他没学过什么是\u201c美\u201d，但已经在回应美了。而且长大后，人还会觉得数学证明、音乐旋律也很美。这种能力指向的到底是什么？',
+        textEn: 'TODO',
+        choices: [
+          DialogueChoice(
+            textZh: '是生物本能，自然选择的结果',
+            textEn: 'TODO',
+            nextNodeId: 'n3d_bio',
+          ),
+          DialogueChoice(
+            textZh: '这种能力太广泛了，超出了生物本能能解释的范围',
+            textEn: 'TODO',
+            nextNodeId: 'n3d_beyond',
+          ),
+        ],
+      ),
+      DialogueNode(
+        id: 'n3d_bio',
+        speaker: 'philosopher',
+        textZh: '对称面孔也许可以用本能解释。但一个数学家看到简洁的证明时说\u201c这很美\u201d——这跟生存、跟繁衍毫无关系。如果对数学之美的感受也是\u201c本能\u201d，那这种本能指向的到底是什么？也许它指向的不是进化的过去，而是某种更永恒的东西。',
+        textEn: 'TODO',
+        nextNodeId: 'n4',
+      ),
+      DialogueNode(
+        id: 'n3d_beyond',
+        speaker: 'philosopher',
+        textZh: '如果对美的感知超出了生物本能能解释的范围，那它一定有一个更深的来源。我的回答是：你的灵魂在进入身体之前，曾在理型世界中直接见过\u201c美本身\u201d。你现在的每一次审美体验，都是那个记忆的回响。',
+        textEn: 'TODO',
+        nextNodeId: 'n4',
+      ),
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // 第四轮（收束）：美本身会消失吗
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      DialogueNode(
+        id: 'n4',
+        speaker: 'philosopher',
+        textZh: '最后一个问题。每一朵花都会凋谢，每一首乐曲都会结束，每一张面孔都会老去。美的东西都在消失。但\u201c美本身\u201d——你心中那个让你能认出美的东西——它会消失吗？',
+        textEn: 'TODO',
+        choices: [
+          DialogueChoice(
+            textZh: '不会。美的东西来来去去，但\u201c美本身\u201d一直在',
             textEn: 'TODO',
             nextNodeId: 'n4a',
           ),
           DialogueChoice(
-            textZh: '它们之间一定有某种共同的东西，虽然我说不出来',
+            textZh: '会。没有了美的东西，\u201c美\u201d也就不存在了',
             textEn: 'TODO',
             nextNodeId: 'n4b',
           ),
         ],
       ),
 
-      // ── 分支 A：主观感受 ──
+      // ── 美本身一直在 ──
       DialogueNode(
         id: 'n4a',
         speaker: 'philosopher',
-        textZh: '如果美纯粹是主观的，为什么几乎所有人都觉得星空很美？跨越不同文化、不同时代，人类对美的感受有那么多重合。纯粹的主观不应该有这么多共识。',
+        textZh: '这就是理型。它不依赖任何花、任何音乐、任何人的存在。它永恒、完美、不变。而你之所以能认出美，是因为你的灵魂曾经直接见过它。你所有的审美体验，都是对那次相遇的回忆。',
         textEn: 'TODO',
-        nextNodeId: 'n5',
+        isEndNode: true,
       ),
 
-      // ── 分支 B：有某种共同的东西 ──
+      // ── 美也会消失 ──
       DialogueNode(
         id: 'n4b',
         speaker: 'philosopher',
-        textZh: '你感觉到了它的存在，但说不出来。这正是因为你的灵魂曾经见过"美的理型"，现在只剩下模糊的记忆。',
-        textEn: 'TODO',
-        nextNodeId: 'n5',
-      ),
-
-      // ── 第三轮汇合：美从哪来（2选项） ──
-      DialogueNode(
-        id: 'n5',
-        speaker: 'philosopher',
-        textZh: '你从没见过"完美的美"，但你就是知道什么是美。这个知识不是从经验中来的。那它从哪来的？',
-        textEn: 'TODO',
-        choices: [
-          DialogueChoice(
-            textZh: '可能是天生的',
-            textEn: 'TODO',
-            nextNodeId: 'n6a',
-          ),
-          DialogueChoice(
-            textZh: '是从生活中慢慢总结出来的',
-            textEn: 'TODO',
-            nextNodeId: 'n6b',
-          ),
-        ],
-      ),
-
-      // ── 分支 A：天生的 ──
-      DialogueNode(
-        id: 'n6a',
-        speaker: 'philosopher',
-        textZh: '接近了。我认为你的灵魂在进入身体之前，曾在理型世界中直接见过"美本身"。你现在感受到的美，其实是灵魂深处的回忆。',
-        textEn: 'TODO',
-        nextNodeId: 'n7',
-      ),
-
-      // ── 分支 B：从生活中总结 ──
-      DialogueNode(
-        id: 'n6b',
-        speaker: 'philosopher',
-        textZh: '但你见过的每一个美的东西都不完美。从一堆不完美的东西里，你怎么总结出"完美"？你一定在某个地方见过完美本身。我认为那是你的灵魂在进入身体之前的记忆。',
-        textEn: 'TODO',
-        nextNodeId: 'n7',
-      ),
-
-      // ── 第四轮汇合：美会消失吗（2选项） ──
-      DialogueNode(
-        id: 'n7',
-        speaker: 'philosopher',
-        textZh: '每一朵花都会凋谢，每一首音乐都会结束，每一张脸都会老去。美的东西都会消失。那"美本身"也会消失吗？',
-        textEn: 'TODO',
-        choices: [
-          DialogueChoice(
-            textZh: '不会，美的东西会消失，但"美本身"是永恒的',
-            textEn: 'TODO',
-            nextNodeId: 'n8a',
-          ),
-          DialogueChoice(
-            textZh: '会，没有了美的东西，"美"也就不存在了',
-            textEn: 'TODO',
-            nextNodeId: 'n8b',
-          ),
-        ],
-      ),
-
-      // ── 分支 A：美本身永恒 ──
-      DialogueNode(
-        id: 'n8a',
-        speaker: 'philosopher',
-        textZh: '这就是理型。花谢了，音乐停了，但美永远在那里，不依赖任何具体的事物。',
+        textZh: '那为什么花谢了之后，你还是知道什么是美？如果\u201c美\u201d随着花一起消失了，你应该连这个概念都忘掉才对。但你没有。也许\u201c美\u201d从来不住在花里，它一直住在别处——一个花开花谢都影响不了的地方。',
         textEn: 'TODO',
         isEndNode: true,
       ),
-
-      // ── 分支 B：美会消失 ──
-      DialogueNode(
-        id: 'n8b',
-        speaker: 'philosopher',
-        textZh: '那为什么花谢了之后，你还是知道什么是美？如果美随着花一起消失了，你应该连这个概念都忘掉才对。',
-        textEn: 'TODO',
-        isEndNode: true,
-      ),
-
-   
     ],
 
     methodSummaryZh: '感官只能给你变动的表象，不能给你事物本身。真正的知识来自理型——一切事物的完美原型。学习不是获取新知识，而是回忆灵魂已经知道的东西。',
@@ -312,7 +415,7 @@ const platoLesson2Forms = Lesson(
     opponentPreview: OpponentPreview(
       nameZh: '亚里士多德',
       nameEn: 'TODO',
-      textZh: '我老师说每张桌子背后都有一个’桌子的理型’。但这解释了什么？你不过是把问题搬到了另一个世界。现在我们不仅要解释桌子，还要解释桌子和理型之间的关系。一个解释如果比被解释的东西还复杂，那就不是好解释。',
+      textZh: '我老师说每张桌子背后都有一个\u2019桌子的理型\u2019。但这解释了什么？你不过是把问题搬到了另一个世界。现在我们不仅要解释桌子，还要解释桌子和理型之间的关系。一个解释如果比被解释的东西还复杂，那就不是好解释。',
       textEn: 'TODO',
     ),
   ),
