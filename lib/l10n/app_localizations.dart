@@ -39,6 +39,7 @@ class AppLocalizations extends ChangeNotifier {
     'language': '语言',
     'switch_language': '切换语言',
     'no_content_yet': '内容开发中…',
+    'journey_map_title': '求知之旅',
   };
 
   static final Map<String, String> _en = {
@@ -58,5 +59,6 @@ class AppLocalizations extends ChangeNotifier {
     'language': 'Language',
     'switch_language': 'Switch Language',
     'no_content_yet': 'Coming soon...',
+    'journey_map_title': 'Journey of Knowledge',
   };
 }
