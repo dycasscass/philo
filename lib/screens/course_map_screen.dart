@@ -213,8 +213,8 @@ class _CourseMapScreenState extends State<CourseMapScreen> {
               if (i > 0) _PathConnector(status: _lessonStatus(i)),
               _LessonNode(
                 number: _lessons[i].number,
-                titleZh: _lessons[i].titleZh,
-                titleEn: _lessons[i].titleEn,
+                titleZh: '${_lessons[i].philosopherNameZh}：${_lessons[i].titleZh}',
+                titleEn: '${_lessons[i].philosopherNameEn}: ${_lessons[i].titleEn}',
                 subtitleZh: _lessons[i].subtitleZh,
                 subtitleEn: _lessons[i].subtitleEn,
                 isZh: _isZh,
