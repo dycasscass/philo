@@ -196,8 +196,8 @@ class _WorldNode extends StatelessWidget {
       onTap: _isUnlocked ? onTap : null,
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: compact ? 8 : 16,
-          vertical: compact ? 10 : 14,
+          horizontal: compact ? 6 : 16,
+          vertical: compact ? 6 : 14,
         ),
         decoration: BoxDecoration(
           color: _isUnlocked ? AppColors.surfaceLight : AppColors.surface,
@@ -230,23 +230,22 @@ class _WorldNode extends StatelessWidget {
                   : _isUnlocked
                       ? Icons.lock_open_outlined
                       : Icons.lock_outline,
-              size: compact ? 14 : 18,
+              size: compact ? 12 : 18,
               color: _isCompleted
                   ? AppColors.success
                   : _isUnlocked
                       ? AppColors.accent
                       : AppColors.textLight,
             ),
-            SizedBox(width: compact ? 4 : 8),
+            SizedBox(width: compact ? 3 : 8),
             Flexible(
               child: Text(
                 isZh ? world.nameZh : world.nameEn,
                 style: TextStyle(
-                  fontSize: compact ? 12 : 15,
+                  fontSize: compact ? 11 : 15,
                   fontWeight: FontWeight.w600,
                   color: _isUnlocked ? AppColors.textPrimary : AppColors.textLight,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
