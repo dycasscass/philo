@@ -1,3 +1,9 @@
 [build]
   command = "bash ./build.sh"
   publish = "build/web"
+
+# SPA: redirect all paths to index.html for Flutter routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
