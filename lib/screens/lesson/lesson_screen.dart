@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/lesson.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../../services/storage_service.dart';
 import 'thought_experiment_step.dart';
 import 'teaching_step.dart';
 import 'dialogue_step.dart';
@@ -13,6 +14,7 @@ class LessonScreen extends StatefulWidget {
   final String philosopherNameZh;
   final String philosopherNameEn;
   final AppLocalizations l10n;
+  final StorageService storage;
 
   const LessonScreen({
     super.key,
@@ -20,6 +22,7 @@ class LessonScreen extends StatefulWidget {
     required this.philosopherNameZh,
     required this.philosopherNameEn,
     required this.l10n,
+    required this.storage,
   });
 
   @override
@@ -250,9 +253,16 @@ class _LessonScreenState extends State<LessonScreen> {
     });
   }
 
-  void _showLessonComplete(int correctCount) {
+  void _showLessonComplete(int correctCount) async {
     final xp =
         correctCount * 10 + 20; // quiz XP (10 per correct) + reflection XP (20)
+
+    // 持久化：保存课程完成状态、XP、解锁哲学家
+    await widget.storage.completeLesson(widget.lesson.id);
+    await widget.storage.addXp(xp);
+    await widget.storage.unlockPhilosopher(widget.lesson.philosopherId);
+
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,

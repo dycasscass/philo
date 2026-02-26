@@ -340,6 +340,9 @@ class _DialogueStepScreenState extends State<DialogueStepScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
+
+                      // Bottom padding so latest message sits in middle-lower area
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.3),
                     ],
                   ),
                 ),

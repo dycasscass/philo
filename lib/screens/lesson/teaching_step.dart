@@ -37,7 +37,8 @@ class _TeachingStepScreenState extends State<TeachingStepScreen> {
   bool get _isZh => widget.l10n.language == AppLanguage.zh;
   int get _totalTeachingSteps => widget.data.steps.length;
 
-  // Phases: background(-1), steps(0..n-1), insight(n), analogy(n+1), legacy(n+2)
+  // Phases: background(-1, skipped if empty), steps(0..n-1), insight(n), analogy(n+1), legacy(n+2)
+  bool get _hasBackground => widget.data.backgroundZh.isNotEmpty;
   bool get _isBackground => _currentStep == -1;
   bool get _isTeachingStep =>
       _currentStep >= 0 && _currentStep < _totalTeachingSteps;
@@ -48,6 +49,7 @@ class _TeachingStepScreenState extends State<TeachingStepScreen> {
   @override
   void initState() {
     super.initState();
+    if (!_hasBackground) _currentStep = 0; // skip background if empty
     _startTypingForCurrentStep();
   }
 
@@ -287,6 +289,9 @@ class _TeachingStepScreenState extends State<TeachingStepScreen> {
                         ],
                       ),
                     ],
+
+                    // Bottom padding so content sits in middle-lower area
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.2),
                   ],
                 ),
               ),
@@ -484,7 +489,11 @@ class _TeachingStepScreenState extends State<TeachingStepScreen> {
                             _isZh
                                 ? widget.data.analogyQuestion!.questionZh
                                 : widget.data.analogyQuestion!.questionEn,
-                            style: Theme.of(context).textTheme.titleLarge,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: AppColors.textPrimary,
+                              height: 1.6,
+                            ),
                           ),
                         ),
                       ),
@@ -562,6 +571,9 @@ class _TeachingStepScreenState extends State<TeachingStepScreen> {
                         ),
                       ),
                     ],
+
+                    // Bottom padding so content sits in middle-lower area
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.2),
                   ],
                 ),
               ),

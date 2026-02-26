@@ -158,7 +158,7 @@ class _ThoughtExperimentStepState extends State<ThoughtExperimentStep> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    _isZh ? '第一步 · 思想实验' : 'Step 1 · Thought Experiment',
+                    _isZh ? '第一步 · ${widget.data.stepNameZh ?? '思想实验'}' : 'Step 1 · ${widget.data.stepNameEn ?? 'Thought Experiment'}',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -224,7 +224,9 @@ class _ThoughtExperimentStepState extends State<ThoughtExperimentStep> {
         _typingDone = false;
       });
       // Type the heading, then show choices
-      final heading = _isZh ? '你会怎么做？' : 'What would you do?';
+      final heading = _isZh
+          ? (widget.data.choicesHeadingZh ?? '你会怎么做？')
+          : (widget.data.choicesHeadingEn ?? 'What would you do?');
       _tw.start(
         text: heading,
         isZh: _isZh,
@@ -254,7 +256,7 @@ class _ThoughtExperimentStepState extends State<ThoughtExperimentStep> {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              _isZh ? '第一步 · 思想实验' : 'Step 1 · Thought Experiment',
+              _isZh ? '第一步 · ${widget.data.stepNameZh ?? '思想实验'}' : 'Step 1 · ${widget.data.stepNameEn ?? 'Thought Experiment'}',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -337,7 +339,7 @@ class _ThoughtExperimentStepState extends State<ThoughtExperimentStep> {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              _isZh ? '第一步 · 思想实验' : 'Step 1 · Thought Experiment',
+              _isZh ? '第一步 · ${widget.data.stepNameZh ?? '思想实验'}' : 'Step 1 · ${widget.data.stepNameEn ?? 'Thought Experiment'}',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -381,8 +383,8 @@ class _ThoughtExperimentStepState extends State<ThoughtExperimentStep> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     _isZh
-                        ? '第一步 · 思想实验'
-                        : 'Step 1 · Thought Experiment',
+                        ? '第一步 · ${widget.data.stepNameZh ?? '思想实验'}'
+                        : 'Step 1 · ${widget.data.stepNameEn ?? 'Thought Experiment'}',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -448,8 +450,8 @@ class _ThoughtExperimentStepState extends State<ThoughtExperimentStep> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     _isZh
-                        ? '第一步 · 思想实验'
-                        : 'Step 1 · Thought Experiment',
+                        ? '第一步 · ${widget.data.stepNameZh ?? '思想实验'}'
+                        : 'Step 1 · ${widget.data.stepNameEn ?? 'Thought Experiment'}',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

@@ -83,7 +83,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final screens = [
-      CourseMapScreen(l10n: widget.l10n),
+      CourseMapScreen(l10n: widget.l10n, storage: widget.storage),
       PhilosopherCollectionScreen(l10n: widget.l10n),
       NotebookScreen(l10n: widget.l10n),
       ProfileScreen(

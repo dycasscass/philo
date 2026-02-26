@@ -27,6 +27,10 @@ class Lesson {
 // ─── Step 1: Thought Experiment ───
 
 class ThoughtExperiment {
+  final String? stepNameZh; // 自定义步骤名，默认"思想实验"
+  final String? stepNameEn; // Custom step name, defaults to "Thought Experiment"
+  final String? choicesHeadingZh; // 选项标题，默认"你会怎么做？"
+  final String? choicesHeadingEn; // Choices heading, defaults to "What would you do?"
   final String scenarioZh;
   final String scenarioEn;
   final List<ExperimentChoice> choices;
@@ -34,6 +38,10 @@ class ThoughtExperiment {
   final String commonTransitionEn;
 
   const ThoughtExperiment({
+    this.stepNameZh,
+    this.stepNameEn,
+    this.choicesHeadingZh,
+    this.choicesHeadingEn,
     required this.scenarioZh,
     required this.scenarioEn,
     required this.choices,
@@ -71,8 +79,8 @@ class Teaching {
   final String legacyEn;
 
   const Teaching({
-    required this.backgroundZh,
-    required this.backgroundEn,
+    this.backgroundZh = '',
+    this.backgroundEn = '',
     required this.steps,
     required this.coreInsightZh,
     required this.coreInsightEn,
