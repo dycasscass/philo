@@ -5,6 +5,7 @@ import '../services/storage_service.dart';
 import '../data/worlds/ancient_greece/plato_lesson1_cave.dart';
 import '../data/worlds/ancient_greece/plato_lesson2_forms.dart';
 import 'lesson/lesson_screen.dart';
+import 'journey_map_screen.dart';
 
 /// 课程地图中每个课程节点的静态配置
 class _LessonConfig {
@@ -195,19 +196,26 @@ class _CourseMapScreenState extends State<CourseMapScreen> {
     print('[DEBUG] _lessonDataMap keys: ${_lessonDataMap.keys.toList()}');
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.l10n.get('course_map_title')),
+        title: Text(_isZh ? '古希腊哲学' : 'Ancient Greek Philosophy'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => JourneyMapScreen(
+                  l10n: widget.l10n,
+                  storage: widget.storage,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _isZh ? '古希腊哲学' : 'Ancient Greek Philosophy',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 32),
-
             // 课程节点
             for (int i = 0; i < _lessons.length; i++) ...[
               if (i > 0) _PathConnector(status: _lessonStatus(i)),

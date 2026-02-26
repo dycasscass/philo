@@ -56,6 +56,21 @@ class StorageService {
     return _prefs.setStringList('unlocked_philosophers', philosophers);
   }
 
+  // Completed worlds
+  List<String> get completedWorlds =>
+      _prefs.getStringList('completed_worlds') ?? [];
+
+  Future<void> completeWorld(String worldId) {
+    final worlds = completedWorlds;
+    if (!worlds.contains(worldId)) {
+      worlds.add(worldId);
+    }
+    return _prefs.setStringList('completed_worlds', worlds);
+  }
+
+  bool isWorldCompleted(String worldId) =>
+      completedWorlds.contains(worldId);
+
   // Language preference
   String get language => _prefs.getString('language') ?? 'zh';
   Future<void> setLanguage(String lang) => _prefs.setString('language', lang);
