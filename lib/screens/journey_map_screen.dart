@@ -113,24 +113,35 @@ class JourneyMapScreen extends StatelessWidget {
     final empStatus = _worldStatus('empiricism');
     final utilStatus = _worldStatus('utilitarianism');
 
+    // 经验主义在主线居中，功利主义作为右侧侧枝
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _WorldNode(
-          world: empiricism,
-          status: empStatus,
-          isZh: _isZh,
-          onTap: empStatus != 'locked' ? () => _onWorldTap(context, 'empiricism') : null,
+        // 经验主义占据中心
+        Expanded(
+          child: Center(
+            child: _WorldNode(
+              world: empiricism,
+              status: empStatus,
+              isZh: _isZh,
+              onTap: empStatus != 'locked'
+                  ? () => _onWorldTap(context, 'empiricism')
+                  : null,
+            ),
+          ),
         ),
-        const SizedBox(width: 8),
-        Container(width: 24, height: 2, color: AppColors.divider),
-        const SizedBox(width: 8),
+        // 横线连接到功利主义侧枝
+        Container(width: 20, height: 2, color: AppColors.divider),
+        const SizedBox(width: 6),
         _WorldNode(
           world: utilitarianism,
           status: utilStatus,
           isZh: _isZh,
-          onTap: utilStatus != 'locked' ? () => _onWorldTap(context, 'utilitarianism') : null,
+          compact: true,
+          onTap: utilStatus != 'locked'
+              ? () => _onWorldTap(context, 'utilitarianism')
+              : null,
         ),
+        const SizedBox(width: 8),
       ],
     );
   }
