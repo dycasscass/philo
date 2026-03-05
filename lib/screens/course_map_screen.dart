@@ -507,8 +507,11 @@ class _WorldLessonsBodyState extends State<_WorldLessonsBody> {
   String _lessonStatus(int index) {
     final config = _lessons[index];
     if (widget.storage.isLessonCompleted(config.lessonId)) return 'completed';
-    // TODO: 开发阶段全部解锁，上线前改回来
-    return 'unlocked';
+    // First lesson is always unlocked; others require previous lesson completed
+    if (index == 0) return 'unlocked';
+    final prev = _lessons[index - 1];
+    if (widget.storage.isLessonCompleted(prev.lessonId)) return 'unlocked';
+    return 'locked';
   }
 
   String get _quizStatus {
