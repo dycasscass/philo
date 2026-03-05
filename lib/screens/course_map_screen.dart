@@ -163,13 +163,11 @@ class _CourseMapScreenState extends State<CourseMapScreen>
                     // Custom AppBar inside the overlay
                     AppBar(
                       automaticallyImplyLeading: false,
+                      leading: IconButton(
+                        icon: const Icon(Icons.map_outlined),
+                        onPressed: _goBackToMap,
+                      ),
                       title: Text(_isZh ? _selectedWorld!.nameZh : _selectedWorld!.nameEn),
-                      actions: [
-                        IconButton(
-                          icon: const Icon(Icons.map_outlined),
-                          onPressed: _goBackToMap,
-                        ),
-                      ],
                     ),
                     Expanded(
                       child: _WorldLessonsBody(
@@ -272,7 +270,7 @@ class _CourseMapScreenState extends State<CourseMapScreen>
                   // 3. Label (always, centered on lockX)
                   Positioned(
                     left: node.lockX * mapWidth,
-                    top: node.labelY * mapHeight - 3,
+                    top: node.labelY * mapHeight - 18,
                     child: FractionalTranslation(
                       translation: const Offset(-0.5, 0.0),
                       child: Container(
