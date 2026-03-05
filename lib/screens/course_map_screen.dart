@@ -322,11 +322,11 @@ class _CourseMapScreenState extends State<CourseMapScreen>
                   if (status == 'locked') {
                     tapCenterX = node.lockX * mapWidth;
                     tapCenterY = node.lockY * mapHeight;
-                    tapDiameter = circleSize * 1.5;
+                    tapDiameter = circleSize * 1.5 * 1.2;
                   } else {
                     tapCenterX = node.glowX * mapWidth;
                     tapCenterY = node.glowY * mapHeight;
-                    tapDiameter = circleSize;
+                    tapDiameter = circleSize * 1.2;
                   }
 
                   return Positioned(
