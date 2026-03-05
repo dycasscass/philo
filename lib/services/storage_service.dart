@@ -71,6 +71,13 @@ class StorageService {
   bool isWorldCompleted(String worldId) =>
       completedWorlds.contains(worldId);
 
+  // Last viewed world
+  String? get lastWorldId => _prefs.getString('last_world_id');
+  Future<void> setLastWorldId(String? worldId) {
+    if (worldId == null) return _prefs.remove('last_world_id');
+    return _prefs.setString('last_world_id', worldId);
+  }
+
   // Language preference
   String get language => _prefs.getString('language') ?? 'zh';
   Future<void> setLanguage(String lang) => _prefs.setString('language', lang);

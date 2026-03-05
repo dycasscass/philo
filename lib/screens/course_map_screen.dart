@@ -5,6 +5,7 @@ import '../services/storage_service.dart';
 import '../models/world.dart';
 import '../data/worlds/ancient_greece/plato_lesson1_cave.dart';
 import '../data/worlds/ancient_greece/plato_lesson2_forms.dart';
+import '../data/worlds/ancient_greece/plato_lesson3_republic.dart';
 import 'lesson/lesson_screen.dart';
 
 /// Each world node's calibrated positions on the map (percentage-based).
@@ -39,17 +40,24 @@ const _worldNodes = <_WorldNode>[
 class CourseMapScreen extends StatefulWidget {
   final AppLocalizations l10n;
   final StorageService storage;
+  final int restoreTrigger;
 
-  const CourseMapScreen({super.key, required this.l10n, required this.storage});
+  const CourseMapScreen({super.key, required this.l10n, required this.storage, this.restoreTrigger = 0});
 
   @override
   State<CourseMapScreen> createState() => _CourseMapScreenState();
 }
 
 class _CourseMapScreenState extends State<CourseMapScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
+
+  // World lessons transition
+  WorldConfig? _selectedWorld;
+  late AnimationController _enterController;
+  double _enterAlignX = 0;
+  double _enterAlignY = 0;
 
   bool get _isZh => widget.l10n.language == AppLanguage.zh;
 
@@ -63,11 +71,30 @@ class _CourseMapScreenState extends State<CourseMapScreen>
     _glowAnimation = Tween<double>(begin: 0.3, end: 0.8).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
+    _enterController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+      reverseDuration: const Duration(milliseconds: 400),
+    );
+    _enterController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void didUpdateWidget(covariant CourseMapScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.restoreTrigger != oldWidget.restoreTrigger && _selectedWorld == null) {
+      final lastId = widget.storage.lastWorldId;
+      if (lastId != null) {
+        setState(() => _selectedWorld = findWorld(lastId));
+        _enterController.forward(from: 0);
+      }
+    }
   }
 
   @override
   void dispose() {
     _glowController.dispose();
+    _enterController.dispose();
     super.dispose();
   }
 
@@ -86,16 +113,12 @@ class _CourseMapScreenState extends State<CourseMapScreen>
 
     final world = findWorld(worldId);
     if (worldId == 'ancient_greece') {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => _WorldLessonsScreen(
-            world: world,
-            l10n: widget.l10n,
-            storage: widget.storage,
-            isZh: _isZh,
-          ),
-        ),
-      ).then((_) => setState(() {}));
+      final node = _worldNodes.firstWhere((n) => n.worldId == worldId);
+      _enterAlignX = (node.glowX * 2) - 1;
+      _enterAlignY = (node.glowY * 2) - 1;
+      setState(() => _selectedWorld = world);
+      widget.storage.setLastWorldId(worldId);
+      _enterController.forward(from: 0);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -110,167 +133,218 @@ class _CourseMapScreenState extends State<CourseMapScreen>
     }
   }
 
+  void _goBackToMap() {
+    _enterController.reverse().then((_) {
+      if (mounted) setState(() => _selectedWorld = null);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final animValue = _enterController.value;
+    final showLessons = _selectedWorld != null;
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          const mapAspect = 768.0 / 1376.0;
-          final screenWidth = constraints.maxWidth;
-          final mapHeight = screenWidth / mapAspect;
-          final circleSize = screenWidth * 0.12;
-          final lockSize = circleSize * 0.4;
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Map is always present
+          _buildMapContent(context),
 
-          return SingleChildScrollView(
-            child: SizedBox(
-              width: screenWidth,
-              height: mapHeight,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Background map
-                  Positioned.fill(
-                    child: Image.asset(
-                      'assets/images/map3.jpg',
-                      fit: BoxFit.fitWidth,
-                      alignment: Alignment.topCenter,
+          // Lessons overlay (AppBar + body together, fade as one unit)
+          if (showLessons)
+            Opacity(
+              opacity: animValue.clamp(0.0, 1.0),
+              child: Container(
+                color: AppColors.background,
+                child: Column(
+                  children: [
+                    // Custom AppBar inside the overlay
+                    AppBar(
+                      automaticallyImplyLeading: false,
+                      title: Text(_isZh ? _selectedWorld!.nameZh : _selectedWorld!.nameEn),
+                      actions: [
+                        IconButton(
+                          icon: const Icon(Icons.map_outlined),
+                          onPressed: _goBackToMap,
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: _WorldLessonsBody(
+                        world: _selectedWorld!,
+                        l10n: widget.l10n,
+                        storage: widget.storage,
+                        isZh: _isZh,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMapContent(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const mapAspect = 768.0 / 1376.0; // width / height
+        final screenHeight = constraints.maxHeight;
+        final screenWidth = constraints.maxWidth;
+        // Stretch map to fill available height, calculate width from aspect ratio
+        final mapHeight = screenHeight;
+        final mapWidth = mapHeight * mapAspect;
+        final circleSize = mapWidth * 0.09;
+        final lockSize = circleSize * 0.4;
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: mapWidth,
+            height: mapHeight,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Background map
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/map3.jpg',
+                    fit: BoxFit.fill,
+                  ),
+                ),
+
+                for (final node in _worldNodes) ...[
+                  // 1. Glow (current world only)
+                  if (_worldStatus(node.worldId) == 'current')
+                    Positioned(
+                      left: node.glowX * mapWidth - circleSize / 2,
+                      top: node.glowY * mapHeight - circleSize / 2,
+                      child: GestureDetector(
+                        onTap: () => _onWorldTap(node.worldId),
+                        child: AnimatedBuilder(
+                          animation: _glowAnimation,
+                          builder: (context, child) {
+                            return Container(
+                              width: circleSize,
+                              height: circleSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: _glowAnimation.value),
+                                    blurRadius: 20,
+                                    spreadRadius: 8,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                  // 2. Lock (locked worlds only)
+                  if (_worldStatus(node.worldId) == 'locked')
+                    Positioned(
+                      left: node.lockX * mapWidth - lockSize / 2,
+                      top: node.lockY * mapHeight - lockSize / 2,
+                      child: Icon(
+                        Icons.lock,
+                        color: const Color(0xFF332321),
+                        size: lockSize,
+                        shadows: const [
+                          Shadow(color: Color(0xFFFFBF00), offset: Offset(2.5, 0), blurRadius: 0),
+                          Shadow(color: Color(0xFFFFBF00), offset: Offset(-2.5, 0), blurRadius: 0),
+                          Shadow(color: Color(0xFFFFBF00), offset: Offset(0, 2.5), blurRadius: 0),
+                          Shadow(color: Color(0xFFFFBF00), offset: Offset(0, -2.5), blurRadius: 0),
+                          Shadow(color: Color(0xFFFFBF00), offset: Offset(1.8, 1.8), blurRadius: 0),
+                          Shadow(color: Color(0xFFFFBF00), offset: Offset(-1.8, 1.8), blurRadius: 0),
+                          Shadow(color: Color(0xFFFFBF00), offset: Offset(1.8, -1.8), blurRadius: 0),
+                          Shadow(color: Color(0xFFFFBF00), offset: Offset(-1.8, -1.8), blurRadius: 0),
+                        ],
+                      ),
+                    ),
+
+                  // 3. Label (always, centered on lockX)
+                  Positioned(
+                    left: node.lockX * mapWidth,
+                    top: node.labelY * mapHeight - 3,
+                    child: FractionalTranslation(
+                      translation: const Offset(-0.5, 0.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5E6C8),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          _isZh ? findWorld(node.worldId).nameZh : findWorld(node.worldId).nameEn,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: _worldStatus(node.worldId) == 'locked'
+                                ? const Color(0xFF5D4037)
+                                : const Color(0xFF3E2723),
+                          ),
+                          maxLines: 1,
+                          softWrap: false,
+                        ),
+                      ),
                     ),
                   ),
 
-                  for (final node in _worldNodes) ...[
-                    // 1. Glow (current world only)
-                    if (_worldStatus(node.worldId) == 'current')
-                      Positioned(
-                        left: node.glowX * screenWidth - circleSize / 2,
-                        top: node.glowY * mapHeight - circleSize / 2,
-                        child: GestureDetector(
-                          onTap: () => _onWorldTap(node.worldId),
-                          child: AnimatedBuilder(
-                            animation: _glowAnimation,
-                            builder: (context, child) {
-                              return Container(
-                                width: circleSize,
-                                height: circleSize,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFFFFD700)
-                                          .withValues(alpha: _glowAnimation.value),
-                                      blurRadius: 20,
-                                      spreadRadius: 8,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
+                  // 4. Tap target circle (transparent, on top)
+                  Builder(builder: (context) {
+                    final status = _worldStatus(node.worldId);
+                    final double tapCenterX;
+                    final double tapCenterY;
+                    final double tapDiameter;
 
-                    // 2. Lock (locked worlds only)
-                    if (_worldStatus(node.worldId) == 'locked')
-                      Positioned(
-                        left: node.lockX * screenWidth - lockSize / 2,
-                        top: node.lockY * mapHeight - lockSize / 2,
-                        child: Icon(
-                          Icons.lock,
-                          color: const Color(0xFF332321),
-                          size: lockSize,
-                          shadows: const [
-                            Shadow(color: Color(0xFFFFBF00), offset: Offset(2.5, 0), blurRadius: 0),
-                            Shadow(color: Color(0xFFFFBF00), offset: Offset(-2.5, 0), blurRadius: 0),
-                            Shadow(color: Color(0xFFFFBF00), offset: Offset(0, 2.5), blurRadius: 0),
-                            Shadow(color: Color(0xFFFFBF00), offset: Offset(0, -2.5), blurRadius: 0),
-                            Shadow(color: Color(0xFFFFBF00), offset: Offset(1.8, 1.8), blurRadius: 0),
-                            Shadow(color: Color(0xFFFFBF00), offset: Offset(-1.8, 1.8), blurRadius: 0),
-                            Shadow(color: Color(0xFFFFBF00), offset: Offset(1.8, -1.8), blurRadius: 0),
-                            Shadow(color: Color(0xFFFFBF00), offset: Offset(-1.8, -1.8), blurRadius: 0),
-                          ],
-                        ),
-                      ),
+                    if (status == 'locked') {
+                      final badgeBottom = node.labelY * mapHeight + 26;
+                      final lockCenterY = node.lockY * mapHeight;
+                      final radius = (lockCenterY - badgeBottom).abs().clamp(lockSize, circleSize);
+                      tapCenterX = node.lockX * mapWidth;
+                      tapCenterY = lockCenterY;
+                      tapDiameter = radius * 2;
+                    } else {
+                      tapCenterX = node.glowX * mapWidth;
+                      tapCenterY = node.glowY * mapHeight;
+                      tapDiameter = circleSize;
+                    }
 
-                    // 3. Label (always, centered on lockX)
-                    Positioned(
-                      left: node.lockX * screenWidth,
-                      top: node.labelY * mapHeight,
-                      child: FractionalTranslation(
-                        translation: const Offset(-0.5, 0.0),
+                    return Positioned(
+                      left: tapCenterX - tapDiameter / 2,
+                      top: tapCenterY - tapDiameter / 2,
+                      child: GestureDetector(
+                        onTap: () => _onWorldTap(node.worldId),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5E6C8),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            _isZh ? findWorld(node.worldId).nameZh : findWorld(node.worldId).nameEn,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: _worldStatus(node.worldId) == 'locked'
-                                  ? const Color(0xFF5D4037)
-                                  : const Color(0xFF3E2723),
-                            ),
-                            maxLines: 1,
-                            softWrap: false,
+                          width: tapDiameter,
+                          height: tapDiameter,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.transparent,
                           ),
                         ),
                       ),
-                    ),
-
-                    // 4. Tap target circle (transparent, on top)
-                    // Current/completed: centered on glow, size = circleSize
-                    // Locked: centered on lock, radius = lock center to badge bottom
-                    Builder(builder: (context) {
-                      final status = _worldStatus(node.worldId);
-                      final double tapCenterX;
-                      final double tapCenterY;
-                      final double tapDiameter;
-
-                      if (status == 'locked') {
-                        // Badge bottom = labelY * mapHeight + badgeHeight (~26px)
-                        final badgeBottom = node.labelY * mapHeight + 26;
-                        final lockCenterY = node.lockY * mapHeight;
-                        final radius = (lockCenterY - badgeBottom).abs().clamp(lockSize, circleSize);
-                        tapCenterX = node.lockX * screenWidth;
-                        tapCenterY = lockCenterY;
-                        tapDiameter = radius * 2;
-                      } else {
-                        tapCenterX = node.glowX * screenWidth;
-                        tapCenterY = node.glowY * mapHeight;
-                        tapDiameter = circleSize;
-                      }
-
-                      return Positioned(
-                        left: tapCenterX - tapDiameter / 2,
-                        top: tapCenterY - tapDiameter / 2,
-                        child: GestureDetector(
-                          onTap: () => _onWorldTap(node.worldId),
-                          child: Container(
-                            width: tapDiameter,
-                            height: tapDiameter,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.transparent,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
+                    );
+                  }),
                 ],
-              ),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
 // ============================================================
-// World Lessons Screen (enters when tapping a world)
+// World Lessons Body (content without Scaffold)
 // ============================================================
 
 /// Per-lesson config inside a world.
@@ -382,15 +456,16 @@ const _lessons = [
 final _lessonDataMap = {
   'plato_cave': platoLesson1Cave,
   'plato_forms': platoLesson2Forms,
+  'plato_republic': platoLesson3Republic,
 };
 
-class _WorldLessonsScreen extends StatefulWidget {
+class _WorldLessonsBody extends StatefulWidget {
   final WorldConfig world;
   final AppLocalizations l10n;
   final StorageService storage;
   final bool isZh;
 
-  const _WorldLessonsScreen({
+  const _WorldLessonsBody({
     required this.world,
     required this.l10n,
     required this.storage,
@@ -398,17 +473,15 @@ class _WorldLessonsScreen extends StatefulWidget {
   });
 
   @override
-  State<_WorldLessonsScreen> createState() => _WorldLessonsScreenState();
+  State<_WorldLessonsBody> createState() => _WorldLessonsBodyState();
 }
 
-class _WorldLessonsScreenState extends State<_WorldLessonsScreen> {
+class _WorldLessonsBodyState extends State<_WorldLessonsBody> {
   String _lessonStatus(int index) {
     final config = _lessons[index];
     if (widget.storage.isLessonCompleted(config.lessonId)) return 'completed';
-    if (index == 0) return 'unlocked';
-    final prevId = _lessons[index - 1].lessonId;
-    if (widget.storage.isLessonCompleted(prevId)) return 'unlocked';
-    return 'locked';
+    // TODO: 开发阶段全部解锁，上线前改回来
+    return 'unlocked';
   }
 
   String get _quizStatus {
@@ -439,43 +512,38 @@ class _WorldLessonsScreenState extends State<_WorldLessonsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isZh ? widget.world.nameZh : widget.world.nameEn),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            for (int i = 0; i < _lessons.length; i++) ...[
-              if (i > 0) _PathConnector(status: _lessonStatus(i)),
-              _LessonNode(
-                number: _lessons[i].number,
-                titleZh: '${_lessons[i].philosopherNameZh}：${_lessons[i].titleZh}',
-                titleEn: '${_lessons[i].philosopherNameEn}: ${_lessons[i].titleEn}',
-                subtitleZh: _lessons[i].subtitleZh,
-                subtitleEn: _lessons[i].subtitleEn,
-                isZh: widget.isZh,
-                status: _lessonStatus(i),
-                onTap: () => _openLesson(i),
-              ),
-            ],
-
-            // 章节测验
-            _PathConnector(status: _quizStatus),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          for (int i = 0; i < _lessons.length; i++) ...[
+            if (i > 0) _PathConnector(status: _lessonStatus(i)),
             _LessonNode(
-              number: 0,
-              titleZh: '章节测验',
-              titleEn: 'Chapter Quiz',
-              subtitleZh: '检验你对古希腊哲学的理解',
-              subtitleEn: 'Test your understanding of Ancient Greek Philosophy',
+              number: _lessons[i].number,
+              titleZh: '${_lessons[i].philosopherNameZh}：${_lessons[i].titleZh}',
+              titleEn: '${_lessons[i].philosopherNameEn}: ${_lessons[i].titleEn}',
+              subtitleZh: _lessons[i].subtitleZh,
+              subtitleEn: _lessons[i].subtitleEn,
               isZh: widget.isZh,
-              status: _quizStatus,
-              isQuiz: true,
-              onTap: null,
+              status: _lessonStatus(i),
+              onTap: () => _openLesson(i),
             ),
           ],
-        ),
+
+          // 章节测验
+          _PathConnector(status: _quizStatus),
+          _LessonNode(
+            number: 0,
+            titleZh: '章节测验',
+            titleEn: 'Chapter Quiz',
+            subtitleZh: '检验你对古希腊哲学的理解',
+            subtitleEn: 'Test your understanding of Ancient Greek Philosophy',
+            isZh: widget.isZh,
+            status: _quizStatus,
+            isQuiz: true,
+            onTap: null,
+          ),
+        ],
       ),
     );
   }

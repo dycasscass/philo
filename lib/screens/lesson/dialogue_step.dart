@@ -84,6 +84,17 @@ class _DialogueStepScreenState extends State<DialogueStepScreen> {
 
     final text = _isZh ? node.textZh : node.textEn;
 
+    // Skip empty end nodes — don't show an empty bubble, just trigger end
+    if (node.isEndNode && text.isEmpty) {
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (mounted) {
+          setState(() => _waitingForContinue = true);
+          _scrollToBottom();
+        }
+      });
+      return;
+    }
+
     setState(() {
       _messages.add(_ChatMessage(
         speaker: node.speaker,
@@ -189,6 +200,14 @@ class _DialogueStepScreenState extends State<DialogueStepScreen> {
       _pendingNextNodeId = null;
       _showCurrentNode();
     } else {
+      final summaryText = _isZh
+          ? widget.data.methodSummaryZh
+          : widget.data.methodSummaryEn;
+      // Skip empty summary → complete dialogue directly
+      if (summaryText.isEmpty) {
+        widget.onComplete();
+        return;
+      }
       // End node → switch to summary page
       setState(() {
         _waitingForContinue = false;
@@ -197,9 +216,7 @@ class _DialogueStepScreenState extends State<DialogueStepScreen> {
       });
       // Start typing summary
       _summaryTw.start(
-        text: _isZh
-            ? widget.data.methodSummaryZh
-            : widget.data.methodSummaryEn,
+        text: summaryText,
         isZh: _isZh,
         onUpdate: () {
           if (mounted) setState(() {});

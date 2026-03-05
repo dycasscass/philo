@@ -37,8 +37,10 @@ class _TeachingStepScreenState extends State<TeachingStepScreen> {
   bool get _isZh => widget.l10n.language == AppLanguage.zh;
   int get _totalTeachingSteps => widget.data.steps.length;
 
-  // Phases: background(-1, skipped if empty), steps(0..n-1), insight(n), analogy(n+1), legacy(n+2)
+  // Phases: background(-1, skipped if empty), steps(0..n-1), insight(n, skipped if empty), analogy(n+1), legacy(n+2, skipped if empty)
   bool get _hasBackground => widget.data.backgroundZh.isNotEmpty;
+  bool get _hasInsight => widget.data.coreInsightZh.isNotEmpty;
+  bool get _hasLegacy => widget.data.legacyZh.isNotEmpty;
   bool get _isBackground => _currentStep == -1;
   bool get _isTeachingStep =>
       _currentStep >= 0 && _currentStep < _totalTeachingSteps;
@@ -144,10 +146,16 @@ class _TeachingStepScreenState extends State<TeachingStepScreen> {
   }
 
   void _advance() {
-    setState(() {
-      _showExtra = false;
-      _currentStep++;
-    });
+    _showExtra = false;
+    _currentStep++;
+    // Skip empty insight page
+    if (_isInsight && !_hasInsight) _currentStep++;
+    // Skip empty legacy page → complete teaching
+    if (_isLegacy && !_hasLegacy) {
+      widget.onComplete();
+      return;
+    }
+    setState(() {});
     _startTypingForCurrentStep();
     _scrollToBottom();
   }

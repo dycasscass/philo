@@ -79,11 +79,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  int _restoreTrigger = 0;
 
   @override
   Widget build(BuildContext context) {
     final screens = [
-      CourseMapScreen(l10n: widget.l10n, storage: widget.storage),
+      CourseMapScreen(l10n: widget.l10n, storage: widget.storage, restoreTrigger: _restoreTrigger),
       PhilosopherCollectionScreen(l10n: widget.l10n),
       NotebookScreen(l10n: widget.l10n),
       ProfileScreen(
@@ -98,7 +99,12 @@ class _MainScreenState extends State<MainScreen> {
       body: screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: (index) {
+          if (index == 0 && _currentIndex == 0) {
+            _restoreTrigger++;
+          }
+          setState(() => _currentIndex = index);
+        },
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.map_outlined),
