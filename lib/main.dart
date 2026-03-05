@@ -10,13 +10,15 @@ import 'screens/profile_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final storage = await StorageService.getInstance();
-  runApp(PhiloQuestApp(storage: storage));
+  final unlockAll = Uri.base.queryParameters['unlock'] == 'all';
+  runApp(PhiloQuestApp(storage: storage, unlockAll: unlockAll));
 }
 
 class PhiloQuestApp extends StatefulWidget {
   final StorageService storage;
+  final bool unlockAll;
 
-  const PhiloQuestApp({super.key, required this.storage});
+  const PhiloQuestApp({super.key, required this.storage, this.unlockAll = false});
 
   @override
   State<PhiloQuestApp> createState() => _PhiloQuestAppState();
@@ -50,6 +52,7 @@ class _PhiloQuestAppState extends State<PhiloQuestApp> {
       home: MainScreen(
         l10n: _l10n,
         storage: widget.storage,
+        unlockAll: widget.unlockAll,
         onToggleLanguage: () {
           _l10n.toggleLanguage();
           widget.storage.setLanguage(
@@ -65,12 +68,14 @@ class MainScreen extends StatefulWidget {
   final AppLocalizations l10n;
   final StorageService storage;
   final VoidCallback onToggleLanguage;
+  final bool unlockAll;
 
   const MainScreen({
     super.key,
     required this.l10n,
     required this.storage,
     required this.onToggleLanguage,
+    this.unlockAll = false,
   });
 
   @override
@@ -84,7 +89,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final screens = [
-      CourseMapScreen(l10n: widget.l10n, storage: widget.storage, restoreTrigger: _restoreTrigger),
+      CourseMapScreen(l10n: widget.l10n, storage: widget.storage, restoreTrigger: _restoreTrigger, unlockAll: widget.unlockAll),
       PhilosopherCollectionScreen(l10n: widget.l10n),
       NotebookScreen(l10n: widget.l10n),
       ProfileScreen(

@@ -43,8 +43,9 @@ class CourseMapScreen extends StatefulWidget {
   final AppLocalizations l10n;
   final StorageService storage;
   final int restoreTrigger;
+  final bool unlockAll;
 
-  const CourseMapScreen({super.key, required this.l10n, required this.storage, this.restoreTrigger = 0});
+  const CourseMapScreen({super.key, required this.l10n, required this.storage, this.restoreTrigger = 0, this.unlockAll = false});
 
   @override
   State<CourseMapScreen> createState() => _CourseMapScreenState();
@@ -180,6 +181,7 @@ class _CourseMapScreenState extends State<CourseMapScreen>
                         l10n: widget.l10n,
                         storage: widget.storage,
                         isZh: _isZh,
+                        unlockAll: widget.unlockAll,
                       ),
                     ),
                   ],
@@ -491,12 +493,14 @@ class _WorldLessonsBody extends StatefulWidget {
   final AppLocalizations l10n;
   final StorageService storage;
   final bool isZh;
+  final bool unlockAll;
 
   const _WorldLessonsBody({
     required this.world,
     required this.l10n,
     required this.storage,
     required this.isZh,
+    this.unlockAll = false,
   });
 
   @override
@@ -507,6 +511,8 @@ class _WorldLessonsBodyState extends State<_WorldLessonsBody> {
   String _lessonStatus(int index) {
     final config = _lessons[index];
     if (widget.storage.isLessonCompleted(config.lessonId)) return 'completed';
+    // URL parameter ?unlock=all bypasses sequential locking
+    if (widget.unlockAll) return 'unlocked';
     // First lesson is always unlocked; others require previous lesson completed
     if (index == 0) return 'unlocked';
     final prev = _lessons[index - 1];
@@ -515,6 +521,7 @@ class _WorldLessonsBodyState extends State<_WorldLessonsBody> {
   }
 
   String get _quizStatus {
+    if (widget.unlockAll) return 'unlocked';
     final allDone = _lessons.every(
       (c) => widget.storage.isLessonCompleted(c.lessonId),
     );
