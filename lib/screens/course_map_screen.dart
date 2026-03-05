@@ -14,17 +14,19 @@ class _WorldNode {
   final double glowX, glowY;
   final double lockX, lockY;
   final double labelX, labelY;
+  final double labelDy; // extra vertical offset for label (positive = down)
 
   const _WorldNode({
     required this.worldId,
     required this.glowX, required this.glowY,
     required this.lockX, required this.lockY,
     required this.labelX, required this.labelY,
+    this.labelDy = 0.0,
   });
 }
 
 const _worldNodes = <_WorldNode>[
-  _WorldNode(worldId: 'ancient_greece',    glowX: 0.2308, glowY: 0.1204, lockX: 0.2300, lockY: 0.0900, labelX: 0.1698, labelY: 0.0516),
+  _WorldNode(worldId: 'ancient_greece',    glowX: 0.2308, glowY: 0.1204, lockX: 0.2300, lockY: 0.0900, labelX: 0.1698, labelY: 0.0516, labelDy: 0.025),
   _WorldNode(worldId: 'medieval',          glowX: 0.7200, glowY: 0.0900, lockX: 0.7089, lockY: 0.1337, labelX: 0.6434, labelY: 0.0661),
   _WorldNode(worldId: 'rationalism',       glowX: 0.5200, glowY: 0.2400, lockX: 0.6412, lockY: 0.3086, labelX: 0.5895, labelY: 0.2425),
   _WorldNode(worldId: 'empiricism',        glowX: 0.2500, glowY: 0.3400, lockX: 0.2489, lockY: 0.4154, labelX: 0.2005, labelY: 0.3520),
@@ -52,6 +54,8 @@ class _CourseMapScreenState extends State<CourseMapScreen>
     with TickerProviderStateMixin {
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
+  final TransformationController _mapTransformController = TransformationController();
+  bool _mapCentered = false;
 
   // World lessons transition
   WorldConfig? _selectedWorld;
@@ -95,6 +99,7 @@ class _CourseMapScreenState extends State<CourseMapScreen>
   void dispose() {
     _glowController.dispose();
     _enterController.dispose();
+    _mapTransformController.dispose();
     super.dispose();
   }
 
@@ -192,17 +197,16 @@ class _CourseMapScreenState extends State<CourseMapScreen>
         const imageAspect = 768.0 / 1376.0; // width / height of map image
         final screenHeight = constraints.maxHeight;
         final screenWidth = constraints.maxWidth;
-        final screenAspect = screenWidth / screenHeight;
 
+        // Cover mode: map fills entire screen, no black bars
+        final fitHeightW = screenHeight * imageAspect;
         double mapWidth, mapHeight;
-        if (screenAspect < imageAspect) {
-          // Narrow screen (phones) — fit to width, no horizontal scroll
+        if (fitHeightW >= screenWidth) {
+          mapHeight = screenHeight;
+          mapWidth = fitHeightW;
+        } else {
           mapWidth = screenWidth;
           mapHeight = screenWidth / imageAspect;
-        } else {
-          // Wide screen (desktop/tablet) — fit to height
-          mapHeight = screenHeight;
-          mapWidth = screenHeight * imageAspect;
         }
 
         final circleSize = mapWidth * 0.09;
@@ -281,7 +285,7 @@ class _CourseMapScreenState extends State<CourseMapScreen>
                 // 3. Label — positioned just above the lock/glow icon
                 Positioned(
                   left: node.lockX * mapWidth,
-                  top: node.lockY * mapHeight - lockSize / 2 - circleSize * 0.15,
+                  top: node.lockY * mapHeight - lockSize / 2 - circleSize * 0.15 + node.labelDy * mapHeight,
                   child: FractionalTranslation(
                     translation: const Offset(-0.5, -1.0),
                     child: Container(
@@ -344,16 +348,21 @@ class _CourseMapScreenState extends State<CourseMapScreen>
           ),
         );
 
-        // Narrow screens: center map vertically, scroll if taller than screen
-        if (screenAspect < imageAspect) {
-          if (mapHeight <= screenHeight) {
-            return Center(child: mapContent);
-          }
-          return SingleChildScrollView(child: mapContent);
+        // Center the map on first build
+        if (!_mapCentered) {
+          _mapCentered = true;
+          final dx = -(mapWidth - screenWidth) / 2;
+          final dy = 0.0; // start from top
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _mapTransformController.value = Matrix4.translationValues(dx, dy, 0);
+          });
         }
-        // Wide screens: keep horizontal scroll behavior
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
+
+        return InteractiveViewer(
+          transformationController: _mapTransformController,
+          constrained: false,
+          minScale: 1.0,
+          maxScale: 2.5,
           child: mapContent,
         );
       },
