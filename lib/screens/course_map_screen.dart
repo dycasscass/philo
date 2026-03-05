@@ -189,152 +189,172 @@ class _CourseMapScreenState extends State<CourseMapScreen>
   Widget _buildMapContent(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const mapAspect = 768.0 / 1376.0; // width / height
+        const imageAspect = 768.0 / 1376.0; // width / height of map image
         final screenHeight = constraints.maxHeight;
         final screenWidth = constraints.maxWidth;
-        // Stretch map to fill available height, calculate width from aspect ratio
-        final mapHeight = screenHeight;
-        final mapWidth = mapHeight * mapAspect;
+        final screenAspect = screenWidth / screenHeight;
+
+        double mapWidth, mapHeight;
+        if (screenAspect < imageAspect) {
+          // Narrow screen (phones) — fit to width, no horizontal scroll
+          mapWidth = screenWidth;
+          mapHeight = screenWidth / imageAspect;
+        } else {
+          // Wide screen (desktop/tablet) — fit to height
+          mapHeight = screenHeight;
+          mapWidth = screenHeight * imageAspect;
+        }
+
         final circleSize = mapWidth * 0.09;
         final lockSize = circleSize * 0.4;
+        final labelFontSize = (mapWidth * 0.026).clamp(9.0, 14.0);
+        final shadowOff = (lockSize * 0.15).clamp(1.0, 3.0);
+        final diagOff = shadowOff * 0.72;
 
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(
-            width: mapWidth,
-            height: mapHeight,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Background map
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/images/map3.jpg',
-                    fit: BoxFit.fill,
+        final mapContent = SizedBox(
+          width: mapWidth,
+          height: mapHeight,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Background map
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/images/map3.jpg',
+                  fit: BoxFit.fill,
+                ),
+              ),
+
+              for (final node in _worldNodes) ...[
+                // 1. Glow (current world only)
+                if (_worldStatus(node.worldId) == 'current')
+                  Positioned(
+                    left: node.glowX * mapWidth - circleSize / 2,
+                    top: node.glowY * mapHeight - circleSize / 2,
+                    child: GestureDetector(
+                      onTap: () => _onWorldTap(node.worldId),
+                      child: AnimatedBuilder(
+                        animation: _glowAnimation,
+                        builder: (context, child) {
+                          return Container(
+                            width: circleSize,
+                            height: circleSize,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFD700)
+                                      .withValues(alpha: _glowAnimation.value),
+                                  blurRadius: 20,
+                                  spreadRadius: 8,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                // 2. Lock (locked worlds only)
+                if (_worldStatus(node.worldId) == 'locked')
+                  Positioned(
+                    left: node.lockX * mapWidth - lockSize / 2,
+                    top: node.lockY * mapHeight - lockSize / 2,
+                    child: Icon(
+                      Icons.lock,
+                      color: const Color(0xFF332321),
+                      size: lockSize,
+                      shadows: [
+                        Shadow(color: const Color(0xFFFFBF00), offset: Offset(shadowOff, 0), blurRadius: 0),
+                        Shadow(color: const Color(0xFFFFBF00), offset: Offset(-shadowOff, 0), blurRadius: 0),
+                        Shadow(color: const Color(0xFFFFBF00), offset: Offset(0, shadowOff), blurRadius: 0),
+                        Shadow(color: const Color(0xFFFFBF00), offset: Offset(0, -shadowOff), blurRadius: 0),
+                        Shadow(color: const Color(0xFFFFBF00), offset: Offset(diagOff, diagOff), blurRadius: 0),
+                        Shadow(color: const Color(0xFFFFBF00), offset: Offset(-diagOff, diagOff), blurRadius: 0),
+                        Shadow(color: const Color(0xFFFFBF00), offset: Offset(diagOff, -diagOff), blurRadius: 0),
+                        Shadow(color: const Color(0xFFFFBF00), offset: Offset(-diagOff, -diagOff), blurRadius: 0),
+                      ],
+                    ),
+                  ),
+
+                // 3. Label — positioned just above the lock/glow icon
+                Positioned(
+                  left: node.lockX * mapWidth,
+                  top: node.lockY * mapHeight - lockSize / 2 - circleSize * 0.15,
+                  child: FractionalTranslation(
+                    translation: const Offset(-0.5, -1.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5E6C8),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        _isZh ? findWorld(node.worldId).nameZh : findWorld(node.worldId).nameEn,
+                        style: TextStyle(
+                          fontSize: labelFontSize,
+                          fontWeight: FontWeight.w700,
+                          color: _worldStatus(node.worldId) == 'locked'
+                              ? const Color(0xFF5D4037)
+                              : const Color(0xFF3E2723),
+                        ),
+                        maxLines: 1,
+                        softWrap: false,
+                      ),
+                    ),
                   ),
                 ),
 
-                for (final node in _worldNodes) ...[
-                  // 1. Glow (current world only)
-                  if (_worldStatus(node.worldId) == 'current')
-                    Positioned(
-                      left: node.glowX * mapWidth - circleSize / 2,
-                      top: node.glowY * mapHeight - circleSize / 2,
-                      child: GestureDetector(
-                        onTap: () => _onWorldTap(node.worldId),
-                        child: AnimatedBuilder(
-                          animation: _glowAnimation,
-                          builder: (context, child) {
-                            return Container(
-                              width: circleSize,
-                              height: circleSize,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFFD700)
-                                        .withValues(alpha: _glowAnimation.value),
-                                    blurRadius: 20,
-                                    spreadRadius: 8,
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
+                // 4. Tap target circle (transparent, on top)
+                Builder(builder: (context) {
+                  final status = _worldStatus(node.worldId);
+                  final double tapCenterX;
+                  final double tapCenterY;
+                  final double tapDiameter;
 
-                  // 2. Lock (locked worlds only)
-                  if (_worldStatus(node.worldId) == 'locked')
-                    Positioned(
-                      left: node.lockX * mapWidth - lockSize / 2,
-                      top: node.lockY * mapHeight - lockSize / 2,
-                      child: Icon(
-                        Icons.lock,
-                        color: const Color(0xFF332321),
-                        size: lockSize,
-                        shadows: const [
-                          Shadow(color: Color(0xFFFFBF00), offset: Offset(2.5, 0), blurRadius: 0),
-                          Shadow(color: Color(0xFFFFBF00), offset: Offset(-2.5, 0), blurRadius: 0),
-                          Shadow(color: Color(0xFFFFBF00), offset: Offset(0, 2.5), blurRadius: 0),
-                          Shadow(color: Color(0xFFFFBF00), offset: Offset(0, -2.5), blurRadius: 0),
-                          Shadow(color: Color(0xFFFFBF00), offset: Offset(1.8, 1.8), blurRadius: 0),
-                          Shadow(color: Color(0xFFFFBF00), offset: Offset(-1.8, 1.8), blurRadius: 0),
-                          Shadow(color: Color(0xFFFFBF00), offset: Offset(1.8, -1.8), blurRadius: 0),
-                          Shadow(color: Color(0xFFFFBF00), offset: Offset(-1.8, -1.8), blurRadius: 0),
-                        ],
-                      ),
-                    ),
+                  if (status == 'locked') {
+                    tapCenterX = node.lockX * mapWidth;
+                    tapCenterY = node.lockY * mapHeight;
+                    tapDiameter = circleSize * 1.5;
+                  } else {
+                    tapCenterX = node.glowX * mapWidth;
+                    tapCenterY = node.glowY * mapHeight;
+                    tapDiameter = circleSize;
+                  }
 
-                  // 3. Label (always, centered on lockX)
-                  Positioned(
-                    left: node.lockX * mapWidth,
-                    top: node.labelY * mapHeight - 18,
-                    child: FractionalTranslation(
-                      translation: const Offset(-0.5, 0.0),
+                  return Positioned(
+                    left: tapCenterX - tapDiameter / 2,
+                    top: tapCenterY - tapDiameter / 2,
+                    child: GestureDetector(
+                      onTap: () => _onWorldTap(node.worldId),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF5E6C8),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          _isZh ? findWorld(node.worldId).nameZh : findWorld(node.worldId).nameEn,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: _worldStatus(node.worldId) == 'locked'
-                                ? const Color(0xFF5D4037)
-                                : const Color(0xFF3E2723),
-                          ),
-                          maxLines: 1,
-                          softWrap: false,
+                        width: tapDiameter,
+                        height: tapDiameter,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.transparent,
                         ),
                       ),
                     ),
-                  ),
-
-                  // 4. Tap target circle (transparent, on top)
-                  Builder(builder: (context) {
-                    final status = _worldStatus(node.worldId);
-                    final double tapCenterX;
-                    final double tapCenterY;
-                    final double tapDiameter;
-
-                    if (status == 'locked') {
-                      final badgeBottom = node.labelY * mapHeight + 26;
-                      final lockCenterY = node.lockY * mapHeight;
-                      final radius = (lockCenterY - badgeBottom).abs().clamp(lockSize, circleSize);
-                      tapCenterX = node.lockX * mapWidth;
-                      tapCenterY = lockCenterY;
-                      tapDiameter = radius * 2;
-                    } else {
-                      tapCenterX = node.glowX * mapWidth;
-                      tapCenterY = node.glowY * mapHeight;
-                      tapDiameter = circleSize;
-                    }
-
-                    return Positioned(
-                      left: tapCenterX - tapDiameter / 2,
-                      top: tapCenterY - tapDiameter / 2,
-                      child: GestureDetector(
-                        onTap: () => _onWorldTap(node.worldId),
-                        child: Container(
-                          width: tapDiameter,
-                          height: tapDiameter,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.transparent,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ],
+                  );
+                }),
               ],
-            ),
+            ],
           ),
+        );
+
+        // Narrow screens: center map vertically, scroll if taller than screen
+        if (screenAspect < imageAspect) {
+          if (mapHeight <= screenHeight) {
+            return Center(child: mapContent);
+          }
+          return SingleChildScrollView(child: mapContent);
+        }
+        // Wide screens: keep horizontal scroll behavior
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: mapContent,
         );
       },
     );
